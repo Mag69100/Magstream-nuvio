@@ -1,6 +1,6 @@
-# GramFlix Nuvio Providers
+Nuvio Providers
 
-Collection de providers de streaming **français** pour l'application **Nuvio**, adaptée depuis [GramFlix (CloudStream)](https://github.com/Mag69100/GramFlix).
+Collection de providers de streaming **français** pour l'application **Nuvio**
 
 ## Providers disponibles
 
@@ -22,7 +22,7 @@ Collection de providers de streaming **français** pour l'application **Nuvio**,
 1. Ouvrir **Nuvio** > **Settings** > **Plugins**
 2. Ajouter l'URL du manifest de ce repo :
    ```
-   https://raw.githubusercontent.com/Mag69100/nuvio-providers/refs/heads/main/manifest.json
+   https://raw.githubusercontent.com/Mag69100/Magstream-nuvio/refs/heads/main/manifest.json
    ```
 3. Actualiser et activer les providers souhaités
 
@@ -41,7 +41,7 @@ Entrer : `http://<votre-ip>:3000/manifest.json`
 ## Structure du projet
 
 ```
-gramflix-nuvio-providers/
+Magstream-nuvio/
 ├── src/                        # Sources multi-fichiers (async/await OK)
 │   ├── _template/              # Template pour créer un nouveau provider
 │   │   └── index.js
