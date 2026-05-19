@@ -1,0 +1,17 @@
+{
+  "name": "Magstream-nuvio",
+  "version": "1.0.0",
+  "description": "French providers for Nuvio",
+  "author": "Mag69100",
+  "scrapers": [
+    {
+      "id": "coflix",
+      "name": "Coflix",
+      "filename": "providers/coflix.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true,
+      "logo": "",
+      "contentLanguage": ["fr"]
+    }
+  ]
+}
