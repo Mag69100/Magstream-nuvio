@@ -8,11 +8,16 @@
     {
       "id": "coflix",
       "name": "Coflix",
-      "filename": "providers/coflix.js",
+      "description": "Coflix provider",
+      "version": "1.0.0",
+      "author": "Mag69100",
       "supportedTypes": ["movie", "tv"],
+      "filename": "providers/coflix.js",
       "enabled": true,
-      "logo": "",
-      "contentLanguage": ["fr"]
+      "contentLanguage": ["fr"],
+      "formats": ["mp4", "mkv"],
+      "limited": false,
+      "supportsExternalPlayer": false
     }
   ]
 }
