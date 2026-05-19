@@ -1,0 +1,25 @@
+{
+  "name": "magstream-nuvio",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mag69100/Magstream-nuvio.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Mag69100/Magstream-nuvio/issues"
+  },
+  "homepage": "https://github.com/Mag69100/Magstream-nuvio#readme",
+  "dependencies": {
+    "cheerio-without-node-native": "^0.20.2",
+    "esbuild": "^0.28.0"
+  }
+}
