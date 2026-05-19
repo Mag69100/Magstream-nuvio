@@ -1,4 +1,4 @@
-const BASE_URL = 'https://coflix.rodeo';
+const BASE_URL = 'https://coflix.dance';
 
 function decodeBase64(str) {
   return Buffer.from(str, 'base64').toString('utf-8');
