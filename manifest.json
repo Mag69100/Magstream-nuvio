@@ -1,23 +1,67 @@
 {
-  "id": "magstream-nuvio",
   "name": "Magstream-nuvio",
+  "description": "Multi providers Magstream",
   "version": "1.0.0",
-  "description": "French providers for Nuvio",
   "author": "Mag69100",
   "scrapers": [
     {
-      "id": "coflix",
-      "name": "Coflix",
-      "description": "Coflix provider",
+      "id": "frenchstream",
+      "name": "FrenchStream",
+      "description": "Films et séries en français",
       "version": "1.0.0",
-      "author": "Mag69100",
+      "filename": "providers/frenchstream.js",
       "supportedTypes": ["movie", "tv"],
+      "enabled": true
+    },
+    {
+      "id": "coflix",
+      "name": "CoFlix",
+      "description": "Films et séries VF/VOSTFR",
+      "version": "1.0.0",
       "filename": "providers/coflix.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true
+    },
+    {
+      "id": "flemmix",
+      "name": "Flemmix",
+      "description": "Films et séries streaming",
+      "version": "1.0.0",
+      "filename": "providers/flemmix.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true
+    },
+    {
+      "id": "darkiworld",
+      "name": "DarkiWorld",
+      "description": "Films HD",
+      "version": "1.0.0",
+      "filename": "providers/darkiworld.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true
+    },
+    {
+      "id": "papadustream",
+      "name": "PapaDuStream",
+      "description": "Streaming FR",
+      "version": "1.0.0",
+      "filename": "providers/papadustream.js",
+      "supportedTypes": ["movie", "tv"],
+      "enabled": true
+    },
+    
+    {
+      "id": "movix",
+      "name": "Movix VF",
+      "description": "Movies and TV series in English & French (dubbed/subtitled)",
+      "version": "1.0.0",
+      "author": "wooodyhood",
+      "supportedTypes": ["movie", "tv"],
+      "filename": "providers/movix.js",
       "enabled": true,
-      "contentLanguage": ["fr"],
-      "formats": ["mp4", "mkv"],
-      "limited": false,
-      "supportsExternalPlayer": false
+      "formats": ["mp4", "m3u8"],
+      "logo": "https://i.postimg.cc/XYrPQm87/movix.png",
+      "contentLanguage": ["en", "fr"]
     }
   ]
 }
