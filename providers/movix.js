@@ -1,7 +1,3 @@
-/**
- * movix - Built from src/movix/
- * Generated: 2026-05-19T17:21:09.998Z
- */
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
@@ -33,7 +29,8 @@ var require_uqload = __commonJS({
     function resolveUqload(url) {
       return fetchText(url, url).then((html) => {
         const match = html.match(/sources:\s*\[\s*\{file:\s*"([^"]+)"/i);
-        if (!match) return null;
+        if (!match)
+          return null;
         return {
           url: match[1],
           headers: {
@@ -56,7 +53,8 @@ var require_doodstream = __commonJS({
     function resolveDood(url) {
       return fetchText(url, url).then((html) => {
         const match = html.match(/['"]\/pass_md5([^'"]+)['"]/);
-        if (!match) return null;
+        if (!match)
+          return null;
         return fetch("https://dood.pm" + match[1], {
           headers: {
             "User-Agent": UA,
