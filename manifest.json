@@ -3,16 +3,17 @@
   "author": "Mag69100",
   "version": "1.0.0",
   "scrapers": [
-
     {
       "id": "movix",
       "name": "Movix",
       "description": "Films et Séries en VF et VOSTFR.",
       "version": "1.0.22",
       "author": "Mag69100",
-      "supportedTypes": [
-        "movie",
-        "tv"
+      "supportedTypes": ["movie", "tv"],
+      "filename": "providers/movix.js",
+      "enabled": true,
+      "contentLanguage": ["fr"],
+      "formats": ["mp4", "m3u8"]
     }
   ]
 }
