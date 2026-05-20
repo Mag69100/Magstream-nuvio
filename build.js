@@ -1,117 +1,187 @@
+#!/usr/bin/env node
+
+/**
+ * Build script for nuvio-providers
+ * 
+ * Bundles each provider from src/<provider>/ into a single file at providers/<provider>.js
+ * 
+ * Usage:
+ *   node build.js              # Build all providers
+ *   node build.js vixsrc       # Build only vixsrc
+ *   node build.js --watch      # Watch mode (requires nodemon)
+ */
+
 const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
 
-const SRC_DIR = path.join(__dirname, 'src');
-const OUT_DIR = path.join(__dirname, 'providers');
+const srcDir = path.join(__dirname, 'src');
+const outDir = path.join(__dirname, 'providers');
 
-if (!fs.existsSync(OUT_DIR)) {
-  fs.mkdirSync(OUT_DIR, { recursive: true });
+// Modules that the Nuvio app provides - don't bundle these
+const EXTERNAL_MODULES = [
+    'cheerio-without-node-native',
+    'react-native-cheerio',
+    'cheerio',
+    'crypto-js',
+    'axios'
+];
+
+// Get provider names from command line or discover all
+function getProvidersToBuild() {
+    const args = process.argv.slice(2).filter(arg => !arg.startsWith('-'));
+
+    if (args.length > 0) {
+        return args;
+    }
+
+    // Discover all provider folders in src/
+    if (!fs.existsSync(srcDir)) {
+        console.error('❌ src/ directory not found. Create provider folders in src/<provider>/');
+        process.exit(1);
+    }
+
+    return fs.readdirSync(srcDir, { withFileTypes: true })
+        .filter(d => d.isDirectory())
+        .map(d => d.name);
 }
-
-// Transpile async/await for Hermes compatibility
-const hermesTransformPlugin = {
-  name: 'hermes-transform',
-  setup(build) {
-    build.onEnd(async (result) => {
-      if (result.errors.length > 0) return;
-      // esbuild handles the transpilation via target option
-    });
-  }
-};
 
 async function buildProvider(providerName) {
-  const entryPoint = path.join(SRC_DIR, providerName, 'index.js');
-  if (!fs.existsSync(entryPoint)) {
-    console.error(`[Build] Entry point not found: ${entryPoint}`);
-    return;
-  }
+    const providerDir = path.join(srcDir, providerName);
+    const entryPoint = path.join(providerDir, 'index.js');
+    const outFile = path.join(outDir, `${providerName}.js`);
 
-  const outFile = path.join(OUT_DIR, `${providerName}.js`);
+    if (!fs.existsSync(entryPoint)) {
+        console.warn(`⚠️  Skipping ${providerName}: no src/${providerName}/index.js found`);
+        return false;
+    }
 
-  try {
-    await esbuild.build({
-      entryPoints: [entryPoint],
-      bundle: true,
-      outfile: outFile,
-      platform: 'node',
-      target: ['es2017'],
-      format: 'cjs',
-      minify: false,
-      external: ['cheerio-without-node-native', 'crypto-js', 'axios'],
-      plugins: [hermesTransformPlugin],
-    });
+    try {
+        const result = await esbuild.build({
+            entryPoints: [entryPoint],
+            bundle: true,
+            outfile: outFile,
+            format: 'cjs',              // CommonJS for module.exports compatibility
+            platform: 'neutral',        // Works in both browser and node-like environments
+            target: 'es2016',           // Transpile async/await to generators for Hermes
+            minify: false,              // Keep readable for debugging
+            sourcemap: false,
+            external: EXTERNAL_MODULES,
+            banner: {
+                js: `/**\n * ${providerName} - Built from src/${providerName}/\n * Generated: ${new Date().toISOString()}\n */`
+            },
+            logLevel: 'warning'
+        });
 
-    console.log(`[Build] ✅ ${providerName} → providers/${providerName}.js`);
-  } catch (err) {
-    console.error(`[Build] ❌ Error building ${providerName}:`, err.message);
-  }
+        const stats = fs.statSync(outFile);
+        const sizeKB = (stats.size / 1024).toFixed(1);
+        console.log(`✅ ${providerName}.js (${sizeKB} KB)`);
+        return true;
+    } catch (err) {
+        console.error(`❌ Failed to build ${providerName}:`, err.message);
+        return false;
+    }
 }
 
+// Transpile a single file in providers/ (for developers writing single-file providers with async)
 async function transpileSingleFile(filename) {
-  const inputFile = filename
-    ? path.join(OUT_DIR, filename)
-    : null;
+    const inputPath = path.join(outDir, filename);
 
-  const files = filename
-    ? [inputFile]
-    : fs.readdirSync(OUT_DIR).map(f => path.join(OUT_DIR, f)).filter(f => f.endsWith('.js'));
-
-  for (const file of files) {
-    const tmpOut = file + '.tmp.js';
-    try {
-      await esbuild.build({
-        entryPoints: [file],
-        bundle: false,
-        outfile: tmpOut,
-        platform: 'node',
-        target: ['es5'],
-        format: 'cjs',
-      });
-      fs.renameSync(tmpOut, file);
-      console.log(`[Transpile] ✅ ${path.basename(file)}`);
-    } catch (err) {
-      console.error(`[Transpile] ❌ ${path.basename(file)}:`, err.message);
-      if (fs.existsSync(tmpOut)) fs.unlinkSync(tmpOut);
+    if (!fs.existsSync(inputPath)) {
+        console.warn(`⚠️  File not found: providers/${filename}`);
+        return false;
     }
-  }
+
+    // Read original file
+    const originalContent = fs.readFileSync(inputPath, 'utf-8');
+
+    // Check if it needs transpilation (has async/await)
+    if (!originalContent.includes('async ') && !originalContent.includes('await ')) {
+        console.log(`⏭️  ${filename} - no async/await, skipping`);
+        return true;
+    }
+
+    try {
+        const result = await esbuild.transform(originalContent, {
+            loader: 'js',
+            target: 'es2016',           // Transpile async/await to generators
+            format: 'cjs'
+        });
+
+        // Write transpiled content back
+        fs.writeFileSync(inputPath, result.code);
+
+        const stats = fs.statSync(inputPath);
+        const sizeKB = (stats.size / 1024).toFixed(1);
+        console.log(`✅ ${filename} transpiled (${sizeKB} KB)`);
+        return true;
+    } catch (err) {
+        console.error(`❌ Failed to transpile ${filename}:`, err.message);
+        return false;
+    }
 }
 
 async function main() {
-  const args = process.argv.slice(2);
+    const args = process.argv.slice(2);
 
-  if (args[0] === '--transpile') {
-    await transpileSingleFile(args[1]);
-    return;
-  }
+    // Handle --transpile flag for single-file providers
+    if (args.includes('--transpile')) {
+        const files = args.filter(a => a !== '--transpile' && !a.startsWith('-'));
 
-  if (args.length > 0) {
-    for (const name of args) {
-      await buildProvider(name);
+        if (files.length === 0) {
+            // Transpile all .js files in providers/ that aren't from src/
+            const srcProviders = fs.existsSync(srcDir)
+                ? fs.readdirSync(srcDir, { withFileTypes: true })
+                    .filter(d => d.isDirectory())
+                    .map(d => d.name + '.js')
+                : [];
+
+            const allProviderFiles = fs.readdirSync(outDir)
+                .filter(f => f.endsWith('.js') && !srcProviders.includes(f));
+
+            console.log(`\n🔄 Transpiling ${allProviderFiles.length} single-file provider(s)...\n`);
+
+            for (const file of allProviderFiles) {
+                await transpileSingleFile(file);
+            }
+        } else {
+            console.log(`\n🔄 Transpiling ${files.length} file(s)...\n`);
+            for (const file of files) {
+                const filename = file.endsWith('.js') ? file : file + '.js';
+                await transpileSingleFile(filename);
+            }
+        }
+        return;
     }
-    return;
-  }
 
-  // Build all providers in src/
-  if (!fs.existsSync(SRC_DIR)) {
-    console.log('[Build] No src/ directory found.');
-    return;
-  }
+    const providers = getProvidersToBuild();
 
-  const providers = fs.readdirSync(SRC_DIR).filter(f => {
-    return fs.statSync(path.join(SRC_DIR, f)).isDirectory() && !f.startsWith('_');
-  });
+    if (providers.length === 0) {
+        console.log('No providers found in src/ directory.');
+        console.log('Create a provider: mkdir -p src/myprovider && touch src/myprovider/index.js');
+        return;
+    }
 
-  if (providers.length === 0) {
-    console.log('[Build] No providers found in src/');
-    return;
-  }
+    console.log(`\n📦 Building ${providers.length} provider(s)...\n`);
 
-  for (const p of providers) {
-    await buildProvider(p);
-  }
+    // Ensure output directory exists
+    if (!fs.existsSync(outDir)) {
+        fs.mkdirSync(outDir, { recursive: true });
+    }
 
-  console.log('\n[Build] All done!');
+    let success = 0;
+    let failed = 0;
+
+    for (const provider of providers) {
+        const result = await buildProvider(provider);
+        if (result) success++;
+        else failed++;
+    }
+
+    console.log(`\n✨ Done! ${success} built, ${failed} skipped/failed\n`);
 }
 
-main().catch(console.error);
+main().catch(err => {
+    console.error('Build failed:', err);
+    process.exit(1);
+});
