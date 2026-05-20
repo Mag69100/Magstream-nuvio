@@ -1,3 +1,4 @@
+[
   {
     "id": "frenchstream-gf",
     "name": "FrenchStream",
@@ -23,7 +24,7 @@
     "supportedTypes": ["movie", "tv"],
     "filename": "providers/coflix.js",
     "enabled": true,
-    "logo": "https://coflix.rodeo/favicon.ico",
+    "logo": "https://coflix.dance/favicon.ico",
     "contentLanguage": ["fr", "en"],
     "formats": ["mp4", "mkv"],
     "limited": false,
