@@ -2,7 +2,7 @@
   "name": "Magstream Nuvio",
   "author": "Mag69100",
   "version": "1.0.0",
-  "providers": [
+  "scrapers": [
     {
       "id": "frenchstream-gf",
       "name": "FrenchStream",
